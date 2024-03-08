@@ -1,16 +1,27 @@
-<!--videoList.php-->
 <?php
-require 'config.php'; // Importa la configuración, asegúrate de que la ruta es correcta.
+require 'config.php'; // Importa la configuración.
 
-// Supongamos que existe una función para obtener las miniaturas; esto es un placeholder.
+// Función para obtener la ruta de la miniatura del video.
+function getThumbnailPath($video) {
+    global $basePath;
+    $thumbnailBasePath = $basePath . 'thumbnails/'; // Asegúrate de que existe este directorio y tiene imágenes.
+    $thumbnailFile = $thumbnailBasePath . pathinfo($video, PATHINFO_FILENAME) . '.jpg'; // Suponiendo que las miniaturas son JPG.
+
+    // Comprobar si existe una miniatura personalizada para el video, si no, usar una predeterminada.
+    if (file_exists($thumbnailFile)) {
+        return $thumbnailFile;
+    } else {
+        return 'path/to/default/thumbnail.jpg'; // Asegúrate de que esta miniatura predeterminada exista.
+    }
+}
+
+// Función para obtener una lista de videos con sus rutas de miniaturas correspondientes.
 function getVideoListWithThumbnails() {
-    global $allowedVideos, $basePath;
-    $thumbnails = []; // Ejemplo: ['video1.mp4' => 'path/to/thumbnail1.jpg', ...]
+    global $allowedVideos;
 
-    // Lógica para asignar a cada video su miniatura correspondiente
+    $thumbnails = [];
     foreach ($allowedVideos as $video) {
-        $thumbnailPath = isset($thumbnails[$video]) ? $thumbnails[$video] : 'path/to/default/thumbnail.jpg';
-        $thumbnails[$video] = $thumbnailPath;
+        $thumbnails[$video] = getThumbnailPath($video); // Obtener la ruta de la miniatura.
     }
 
     return $thumbnails;
