@@ -1,19 +1,27 @@
 <?php
-$videoPath = 'E:/videos/Simpson.mp4';
+require 'config.php';
 
-if (file_exists($videoPath)) {
-    header('Content-Type: video/mp4');
-    $fp = @fopen($videoPath, 'rb');
+// Simulación de una entrada del usuario (debería provenir de alguna solicitud HTTP)
+$userRequestedVideo = "Simpson.mp4"; // Ejemplo, reemplazar con la entrada real del usuario
 
-    $size   = filesize($videoPath); // Tamaño del archivo
-    $length = $size;           // Contenido restante por enviar
-    $start  = 0;               // Punto de inicio de la transmisión
-    $end    = $size - 1;       // Punto final de la transmisión
+// Validación de la entrada contra la lista blanca
+if (in_array($userRequestedVideo, $allowedVideos)) {
+    $videoPath = $basePath . $userRequestedVideo;
+
+    if (file_exists($videoPath)) {
+        header('Content-Type: video/mp4');
+        $fp = fopen($videoPath, 'rb');
+
+
+    $size = filesize($videoPath); // Tamaño del archivo
+    $length = $size; // Contenido restante por enviar
+    $start = 0; // Punto de inicio de la transmisión
+    $end = $size - 1; // Punto final de la transmisión
 
     header("Accept-Ranges: 0-$length");
     if (isset($_SERVER['HTTP_RANGE'])) {
         $c_start = $start;
-        $c_end   = $end;
+        $c_end = $end;
 
         list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
         if (strpos($range, ',') !== false) {
@@ -23,8 +31,8 @@ if (file_exists($videoPath)) {
         }
         if ($range == '-') {
             $c_start = $size - substr($range, 1);
-        }else{
-            $range  = explode('-', $range);
+        } else {
+            $range = explode('-', $range);
             $c_start = $range[0];
             $c_end = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $c_end;
         }
@@ -43,7 +51,7 @@ if (file_exists($videoPath)) {
     }
     header("Content-Length: ".$length);
     $buffer = 1024 * 8;
-    while(!feof($fp) && ($p = ftell($fp)) <= $end) {
+    while (!feof($fp) && ($p = ftell($fp)) <= $end) {
         if ($p + $buffer > $end) {
             $buffer = $end - $p + 1;
         }
@@ -54,6 +62,10 @@ if (file_exists($videoPath)) {
 
     fclose($fp);
 } else {
-    echo "El archivo de video no se encuentra disponible.";
+    // El archivo existe en la lista blanca pero no se encontró en el servidor
+    echo "El video solicitado no se encuentra disponible.";
 }
-?>
+} else {
+// El video solicitado no está en la lista blanca
+echo "Acceso denegado.";
+}
