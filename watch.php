@@ -1,8 +1,15 @@
 <?php
 require 'config.php'; // Asegúrate de que esta ruta es correcta
 
+// Definir una función de logging personalizada
+function logError($message) {
+    // El archivo donde se almacenan los logs, asegúrate de que PHP tiene permiso de escritura en esta ubicación
+    $logFile = '/path/to/error_log.log';
+    error_log(date('Y-m-d H:i:s') . ' - ' . $message . "\n", 3, $logFile);
+}
+
 // Obtener el nombre del video de la entrada del usuario a través de GET
-$userRequestedVideo = isset($_GET['v']) ? $_GET['v'] : '';
+$userRequestedVideo = isset($_GET['v']) ? basename($_GET['v']) : '';
 
 // Validación de la entrada contra la lista blanca
 if (in_array($userRequestedVideo, $allowedVideos)) {
@@ -11,6 +18,10 @@ if (in_array($userRequestedVideo, $allowedVideos)) {
     if (file_exists($videoPath)) {
         header('Content-Type: video/mp4');
         $fp = fopen($videoPath, 'rb');
+        if (!$fp) {
+            logError("Error al abrir el archivo: $userRequestedVideo");
+            exit('Error al procesar su solicitud de video.');
+        }
 
         $size = filesize($videoPath); // Tamaño del archivo
         $length = $size; // Contenido restante por enviar
@@ -49,7 +60,8 @@ if (in_array($userRequestedVideo, $allowedVideos)) {
             header("Content-Range: bytes $start-$end/$size");
         }
         header("Content-Length: ".$length);
-        $buffer = 1024 * 8;
+        $buffer = 1024 * 8; // 8KB por defecto
+        $buffer = 1024 * 64; // Incrementar a 64KB
         while (!feof($fp) && ($p = ftell($fp)) <= $end) {
             if ($p + $buffer > $end) {
                 $buffer = $end - $p + 1;
@@ -61,8 +73,10 @@ if (in_array($userRequestedVideo, $allowedVideos)) {
 
         fclose($fp);
     } else {
+        logError("El video solicitado no existe: $userRequestedVideo");
         echo "El video solicitado no se encuentra disponible.";
     }
 } else {
+    logError("Acceso denegado para el video: $userRequestedVideo");
     echo "Acceso denegado.";
 }
