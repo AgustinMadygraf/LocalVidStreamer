@@ -21,15 +21,11 @@
     <input class="form-control mb-4" id="videoSearch" type="text" placeholder="Buscar video...">
     <div class="list-group" id="videoList">
         <?php
-        require 'config.php'; // Importa la configuración, asegúrate de que la ruta es correcta.
+        include 'videoList.php'; // Incluye la lógica para obtener los videos y sus miniaturas.
+        $thumbnails = getVideoListWithThumbnails(); // Utiliza la función definida en videoList.php
 
-        // Suponiendo que tienes una forma de generar o almacenar miniaturas para cada video.
-        // La siguiente línea es solo un placeholder; deberás adaptarlo a tu implementación real.
-        $thumbnails = []; // Ejemplo: ['video1.mp4' => 'path/to/thumbnail1.jpg', ...];
-
-        foreach ($allowedVideos as $video) {
-            $videoSanitized = htmlspecialchars($video); // Sanitiza para prevenir vulnerabilidades XSS.
-            $thumbnailPath = isset($thumbnails[$video]) ? $thumbnails[$video] : 'path/to/default/thumbnail.jpg'; // Asegúrate de tener una miniatura predeterminada.
+        foreach ($thumbnails as $video => $thumbnailPath) {
+            $videoSanitized = htmlspecialchars($video);
             echo "<a href='watch.php?v=" . urlencode($video) . "' class='list-group-item list-group-item-action'>";
             echo "<img src='" . htmlspecialchars($thumbnailPath) . "' alt='Miniatura' class='video-thumbnail'>";
             echo $videoSanitized;
