@@ -29,7 +29,7 @@
             echo "<a href='watch.php?v=" . urlencode($video) . "' class='list-group-item list-group-item-action'>";
             echo "<img src='" . htmlspecialchars($thumbnailPath) . "' alt='Miniatura' class='video-thumbnail'>";
             echo $videoSanitized;
-            echo "</a>";
+            echo "</a><br>";
         }
         ?>
     </div>
