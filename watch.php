@@ -4,7 +4,7 @@ require 'config.php'; // Asegúrate de que esta ruta es correcta
 // Definir una función de logging personalizada
 function logError($message) {
     // El archivo donde se almacenan los logs, asegúrate de que PHP tiene permiso de escritura en esta ubicación
-    $logFile = '/path/to/error_log.log';
+    $logFile = 'C:\AppServ\www\LocalVidStreamer/log/error_log.log';
     error_log(date('Y-m-d H:i:s') . ' - ' . $message . "\n", 3, $logFile);
 }
 
