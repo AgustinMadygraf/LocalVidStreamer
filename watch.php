@@ -1,68 +1,45 @@
-<?php
-require 'config.php'; // Asegúrate de que esta ruta es correcta
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Video - LocalVidStreamer</title>
+    <!-- Incluir CSS de Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <?php
+    require 'config.php'; // Asegúrate de que esta ruta es correcta.
 
-// Obtener el nombre del video de la entrada del usuario a través de GET
-$userRequestedVideo = isset($_GET['v']) ? $_GET['v'] : '';
-
-// Validación de la entrada contra la lista blanca
-if (in_array($userRequestedVideo, $allowedVideos)) {
-    $videoPath = $basePath . $userRequestedVideo;
-
-    if (file_exists($videoPath)) {
-        header('Content-Type: video/mp4');
-        $fp = fopen($videoPath, 'rb');
-
-        $size = filesize($videoPath); // Tamaño del archivo
-        $length = $size; // Contenido restante por enviar
-        $start = 0; // Punto de inicio de la transmisión
-        $end = $size - 1; // Punto final de la transmisión
-
-        header("Accept-Ranges: 0-$length");
-        if (isset($_SERVER['HTTP_RANGE'])) {
-            $c_start = $start;
-            $c_end = $end;
-
-            list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
-            if (strpos($range, ',') !== false) {
-                header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes $start-$end/$size");
-                exit;
-            }
-            if ($range == '-') {
-                $c_start = $size - substr($range, 1);
-            } else {
-                $range = explode('-', $range);
-                $c_start = $range[0];
-                $c_end = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $c_end;
-            }
-            $c_end = ($c_end > $end) ? $end : $c_end;
-            if ($c_start > $c_end || $c_start > $size - 1 || $c_end >= $size) {
-                header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes $start-$end/$size");
-                exit;
-            }
-            $start = $c_start;
-            $end = $c_end;
-            $length = $end - $start + 1; // Ajusta el tamaño del contenido basado en el rango solicitado
-            fseek($fp, $start);
-            header('HTTP/1.1 206 Partial Content');
-            header("Content-Range: bytes $start-$end/$size");
+    if (isset($_GET['v']) && in_array($_GET['v'], $allowedVideos)) {
+        $videoName = htmlspecialchars($_GET['v']);
+        $videoPath = $basePath . $videoName;
+        
+        if (file_exists($videoPath)) {
+            echo "<div class='row'>";
+            echo "<div class='col-md-8 offset-md-2'>";
+            echo "<video controls width='100%' class='rounded'>";
+            echo "<source src='streamer.php?v=" . urlencode($videoName) . "' type='video/mp4'>";
+            echo "Tu navegador no soporta el elemento <code>video</code>.";
+            echo "</video>";
+            echo "</div>";
+            echo "</div>";
+        } else {
+            echo "<p class='text-center'>El video solicitado no está disponible.</p>";
         }
-        header("Content-Length: ".$length);
-        $buffer = 1024 * 8;
-        while (!feof($fp) && ($p = ftell($fp)) <= $end) {
-            if ($p + $buffer > $end) {
-                $buffer = $end - $p + 1;
-            }
-            set_time_limit(0); // Desactiva el límite de tiempo de ejecución
-            echo fread($fp, $buffer);
-            flush(); // Vacía el sistema de escritura de salida
-        }
-
-        fclose($fp);
     } else {
-        echo "El video solicitado no se encuentra disponible.";
+        echo "<p class='text-center'>Video no encontrado o acceso denegado.</p>";
     }
-} else {
-    echo "Acceso denegado.";
-}
+    ?>
+    <div class="text-center mt-3">
+        <a href="index.php" class="btn btn-primary">Volver a la lista de videos</a>
+    </div>
+</div>
+
+<!-- Scripts de Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.min.js"></script>
+</body>
+</html>
