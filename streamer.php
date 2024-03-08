@@ -66,4 +66,3 @@ if (in_array($userRequestedVideo, $allowedVideos)) {
 } else {
     echo "Acceso denegado.";
 }
-?>

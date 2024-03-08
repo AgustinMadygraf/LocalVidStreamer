@@ -13,4 +13,3 @@ foreach ($allowedVideos as $video) {
 }
 
 echo "</ul>";
-?>
