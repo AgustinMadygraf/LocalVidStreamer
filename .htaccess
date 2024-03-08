@@ -1,4 +1,3 @@
 RewriteEngine On
 RewriteBase /LocalVidStreamer/
-RewriteCond %{QUERY_STRING} v=([^&]+)
-RewriteRule ^watch$ index.php?v=%1 [L,QSA]
+RewriteRule ^watch$ index.php [L,QSA]
